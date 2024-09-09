@@ -8,31 +8,44 @@ app.use(express.json())
 let db = new Map()
 var id = 1 // 하나의 객체를 유니크하게 구별하기 위함(기본키 역할)
 
-// 로그인
+// 로그인 부분 백업
 app.post('/login', (req, res) => {
-    console.log(req.body); // userId, pwd
+    console.log(req.body) //userId, pwd
+    
+    // userId가 db에 저장된 회원인지 확인해야 함!
+    const {userId, password} = req.body
+    var hasUserId = false
+    var loginUser = {}
 
-    const { userId, password } = req.body;
-
-    // Map을 배열로 변환하고, find로 userId를 가진 사용자를 찾음
-    const loginUser = Array.from(db.values()).find(user => user.userId === userId);
-
-    if (loginUser) {  // userId가 존재하는 경우
-        console.log("같은 id 값을 찾음!");
-
-        if (loginUser.password === password) {
-            console.log("비밀번호도 같은 값을 찾음!");
-            res.status(200).json({ message: "로그인 성공" });
-        } else {
-            console.log("비밀번호 값이 틀렸음!");
-            res.status(401).json({ message: "비밀번호가 틀렸습니다." });
+    db.forEach( (user, id) => {
+        // a : value, b : key, c : Map
+        if (user.userId === userId) {
+            loginUser = user
         }
-    } else {  // userId가 존재하지 않는 경우
-        console.log("죄송합니다. 입력하신 id는 없는 id입니다.");
-        res.status(404).json({ message: "존재하지 않는 ID입니다." });
-    }
-});
+    })
 
+    // userId 값을 못찾았을 때
+    if (isExist(loginUser)) {
+        console.log("같은 id 값을 찾음!")
+
+        // pwd도 맞는지 비교
+        if (loginUser.password === password) {
+            console.log("비밀번호도 같은 값을 찾음!")
+        } else {
+            console.log("비밀번호 값이 틀렸음!")
+        }
+    } else {
+        console.log("죄송합니다. 입력하신 id는 없는 id입니다.")
+    }
+})
+
+function isExist(obj) {
+    if (Object.keys(obj).length) {
+        return true
+    } else {
+        return false
+    }
+}
 
 // 회원가입
 app.post('/join', (req, res) => {
